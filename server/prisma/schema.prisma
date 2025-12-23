@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id String @id @default(cuid())
+  fullName String
+  email String @unique
+  passwordHash String
+  profileImg String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  messageSent Message[] @relation("MessageSender")
+  messageReceived Message[] @relation("MessageReceiver")
+}
+
+model Message {
+  id String @id @default(cuid())
+  senderId String
+  receiverId String
+  content String
+  createdAt DateTime @default(now())
+  messageSender User @relation("MessageSender", fields: [senderId], references: [id])
+  messageReceiver User @relation("MessageReceiver", fields: [receiverId], references: [id])
+}
+
+
+// prisma.user.findUnique({
+//   where: {
+//     OR: [
+//       {
+//         messageSent: senderId,
+//         messageReceived: receiverId
+//       },
+//       {
+//         messageSent: receiverId,
+//         messageReceived: senderId
+//       }
+//     ]
+//   },
+// })
